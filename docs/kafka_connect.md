@@ -13,13 +13,13 @@
 Kafka Connect에서 *커넥터* 는 데이터가 어디에서 복제되는지를 정의합니다. **커넥터 인스턴스** 는 카프카와 그 연관 시스템 간의 데이터 복제를 책임지는 논리적 역할이다. **커넥터 플러그인** 들은 구현된 커넥터 클래스를 추가하는 `jar`들이다. 커넥터 인스턴스와 커넥터 플러그인을 통칭하여 **커넥터** 라고 한다. 하지만 참조되는 문맥을 보고 의미를 판단해야 합니다(예> *커넥터 설치* 는 플러그인을 나타내고, *커넥터 상태 확인* 은 커넥터 인스턴스를 의미한다)
 
 우리는 사용자들에게 [우리가 미리 구현한 커넥터](http://www.confluent.io/product/connectors/)들을 사용하기를 권장하지만, 처음부터 새로 플러그인을 작성할 수도 있습니다. 새 플러그인을 작성하고자 하는 고급 개발자는 다음 작업 흐름을 참고하면 됩니다. 더 자세한 내용은 [developer guide](http://docs.confluent.io/3.1.1/connect/connect_devguide)를 참고할 것
-![](../images/kafka_connect/connector-model-simple.png)
+![](images/kafka_connect/connector-model-simple.png)
 
 ### Tasks
 태스크는 커넥트 데이터 모델의 중심역할을 담당한다. 개별 커넥터 인스턴스는 실제 데이터를 복제하는 일련의 작업을 조정합니다. 커넥터가 단일 작업을 여러 개별 태스크로 분할할 수 있게 함으로써, Kafka Connect는 약간의 설정 변경만으로도 기본적인 병렬성 및 확장성을 보장합니다. 이 태스크들은 상태를 저장하고 있지 않습니다. 작업 상태는 `config.storage.topic`및 `status.storage.topic`과 같은 특별 토픽에 저장되고 관련 커넥터에 의해 관리됩니다.
 따라서, 탄력적이고 확장 가능한 데이터 파이프라인을 제공하기 위해 언제든지 작업을 시작, 중지 혹은 재시작 할 수 있습니다.
 
-![](../images/kafka_connect/data-model-simple.png)
+![](images/kafka_connect/data-model-simple.png)
 - Connect 소스 태스크를 통해 카프카로 전달되는 고수준 데이터 표현. 내부 오프셋은 작업 자체가 아닌 Kafka 또는 디스크에 저장됩니다.
 
 #### Task Rebalancing
@@ -29,7 +29,7 @@ Kafka Connect에서 *커넥터* 는 데이터가 어디에서 복제되는지를
 한 태스크가 실패하는 경우에는 예외 케이스로 인식하고 더 이상의 재분배 프로세스를 실행하지 않습니다.
 이러첨, 실패한 태스크는 프레임워크를 통해 재시작되지 않고, 재시작 등의 작업이 필요한 경우 [REST API](http://docs.confluent.io/3.1.1/connect/managing.html#connect-managing-rest-examples)등을 통해 할 수 있다.
 
-![](../images/kafka_connect/task-failover.png)
+![](images/kafka_connect/task-failover.png)
 
 ### Workers
 커넥터와 태스크는 작업의 논리적 단위이며 실행되기 위해 일련의 프로세스에 계획되어야 한다. Kafka Connect는 이런 프로세스들을 **워커(worker)** 라고 부른다.
@@ -46,7 +46,7 @@ Kafka Connect에서 *커넥터* 는 데이터가 어디에서 복제되는지를
 그러면 이들은 모든 사용 가능한 워커의 커넥터 및 태스크를 자동적으로 조정합니다. 워커를 하나 추가하거나, 종료하거나, 혹은 예기치 못하게 실패하는 경우, 다른 워커들이 이를 감지하고 갱신된 사용 가능한 워커들을 자동적으로 조정하여 커넥터들과 태스크들을 재 분배합니다.
 컨슈머 그룹 재분배와의 유사성에 주목하세요. 수면 아래에서 워커들의 연결은 컨슈머 그룹을 조정하고 분배하는데 사용됩니다.
 
-![](../images/kafka_connect/worker-model-basics.png)
+![](images/kafka_connect/worker-model-basics.png)
 노드 3대로 구성된 Kafka Connect 클러스터. 커넥터들(작업 재구성에 있어 요구되는 변경사항을 소스나 싱크 시스템에서 모니터링)과 태스크들(커넥터 데이터의 하위 집합 복사)은 활성 워커들에 자동적으로 분배된다. 이 워커와 태스크간의 분리는 각 태스크가 할당된 파티션들르 인해 확인될 수 있다
 
 ### Converters
@@ -54,7 +54,7 @@ Kafka Connect에서 *커넥터* 는 데이터가 어디에서 복제되는지를
 컨버터는 자연스레 커넥터 사이에서 변환기를 재사용 할 수 있도록 커넥터 자체와 분리되어 있습니다.
 예를들어, 동일한 Avro컨버터를 이용하여 JDBC소스 커넥터가 Avro데이터를 Kafka에 쓸 수 있고 HDFS Sink 커넥터가는 Kafka에서 Avro데이터를 읽을 수 있습니다. 이는, HDFS에 parquet형식으로 데이터를 쓰는 Record Set을 반환하더라도 동일한 변환기를 쓸 수 있다는 뜻입니다.
 
-![](../images/kafka_connect/converter-basics.png)
+![](images/kafka_connect/converter-basics.png)
 어떻게 컨버터들이 데이터베이스에서 JDBC 소스 커넥터를 통해 데이터를 읽고, Kafka에 쓰고, 또 HDFS Sink 커넥터를 이용하여 HDFS에 기록하는지 보여주는 예제
 
 사용자들이 자세한 변환 프로세스를 아는것은 크게 중요치 않다. 하지만 Kafka에 쓰거나 읽을 때 특정 데이터 형식을 지원하는 Connect에 배포가 필요하다는 것을 이해해야 합니다.
